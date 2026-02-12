@@ -39,7 +39,7 @@ jobs:
     # Step E: Run Tests (The crucial part)
     - name: Run tests with pytest
       run: |
-        pytest
+        python -m pytest
 
     # Step F: Build Docker Image (Only if tests pass)
     - name: Build Docker image
