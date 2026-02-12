@@ -1,0 +1,47 @@
+name: CI Pipeline
+
+# 1. The Trigger: Run on every push to the 'main' branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    # Run on a virtual Ubuntu machine hosted by GitHub
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step A: Download your code
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Step B: Install Python
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    # Step C: Install dependencies
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest httpx
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    # Step D: Lint with flake8 (Checks for syntax errors/bad style)
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+    # Step E: Run Tests (The crucial part)
+    - name: Run tests with pytest
+      run: |
+        pytest
+
+    # Step F: Build Docker Image (Only if tests pass)
+    - name: Build Docker image
+      run: |
+        docker build . --file Dockerfile --tag my-model:latest
